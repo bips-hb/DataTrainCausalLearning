@@ -1,0 +1,26 @@
+Package: DataTrainCausalLearning
+Type: Package
+Title: Practicals for the Data Train Course "Causal learning" 2021 (V Didelez)
+Version: 1.0.0
+Author: R Foraita, C Bang
+Maintainer: R Foraita <foraita@leibniz-bips.de>
+Description: Installs all necessary packages and provides R codes for the parts (1) causal reasoning, (2) causal estimation and (3) causal learning.
+Depends: R (>= 4.0.0)
+Imports:
+  AIPW,
+  BiocManager,
+  bnlearn,
+  cobalt,  
+  dagitty,
+  data.table,
+  dplyr,
+  GeneralisedCovarianceMeasure,
+  ggplot2,
+  ipw,
+  stdReg,
+  SuperLearner,
+  survey
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
