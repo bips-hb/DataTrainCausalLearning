@@ -1,0 +1,112 @@
+---
+title: "Causal Reasoning"
+author: "V Didelez, R Foraita"
+date: "30 11 2021"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Causal Reasoning}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = FALSE,
+  collapse = TRUE,
+  fig.width = 6)
+```
+
+
+# Make use of the DAGitty package
+
+Enter the following DAG into R: [dagitty.net/ms0VVMy](dagitty.net/ms0VVMy)
+
+```{r dagitty, warning=FALSE, message=FALSE}
+library(dagitty)
+
+# Build the graph
+g <- dagitty("dag {
+              ESRD [outcome]
+              current.smoking [exposure]
+              baseline.covariates -> earlier.smoking
+              baseline.covariates -> prior.disease
+              baseline.covariates -> ESRD
+              current.smoking -> ESRD
+              earlier.smoking -> current.smoking
+              earlier.smoking -> prior.disease
+              prior.disease -> current.smoking
+              prior.disease -> ESRD
+              }")
+
+plot(graphLayout(g))
+```
+
+## Making 'earlier smoking' unobserved
+```{r unobserved}
+g.unob <- g
+latents(g.unob) <- c("earlier.smoking")
+```
+
+## List adjustment sets
+```{r adjustmentsets}
+adjustmentSets(g, type = "minimal", effect = "total")
+adjustmentSets(g.unob, type = "minimal", effect = "total")
+```
+
+## List testable implications
+```{r}
+print(impliedConditionalIndependencies(g))
+print(impliedConditionalIndependencies(g.unob))
+```
+
+
+
+## List total effects that are identifiable by regression
+```{r totalEffects}
+for(n in names(g.unob)){
+  for(m in setdiff(dagitty::descendants(g.unob, n), n)){
+    a <- adjustmentSets(g.unob, n, m)
+    if(length(a) > 0){
+      cat("The total effect of ", n," on ", m,
+          " is identifiable controlling for:\n", sep = "")
+      print(a, prefix=" * ")
+    }
+  }
+}
+
+```
+
+## List all back-door paths
+```{r paths}
+## show paths
+(pfad <- paths(g.unob, from = "current.smoking", to = "ESRD"))
+
+# number of open back-door paths
+sum(pfad$open)
+```
+
+
+## Insert new node
+```{r}
+g2 <- dagitty("dag {
+              ESRD [outcome]
+              current.smoking [exposure]
+              unknown [latent]
+              baseline.covariates -> earlier.smoking
+              baseline.covariates -> prior.disease
+              baseline.covariates -> ESRD
+              current.smoking -> ESRD
+              earlier.smoking -> current.smoking
+              earlier.smoking -> prior.disease
+              prior.disease -> current.smoking
+              prior.disease -> ESRD
+              prior.disease <- unknown -> ESRD
+              }")
+
+plot(graphLayout(g2))
+
+adjustmentSets(g2)
+
+```
+
