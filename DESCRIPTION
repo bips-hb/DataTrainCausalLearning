@@ -27,7 +27,11 @@ Imports:
   survey,
   tidyverse
 URL: https://github.com/bips-hb/DataTrainCausalLearning
+VignetteBuilder: knitr
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+Suggests: 
+    rmarkdown,
+    knitr
