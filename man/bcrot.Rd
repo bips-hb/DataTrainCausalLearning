@@ -23,6 +23,6 @@ The rotterdam data set includes 2982 primary breast cancers patients whose data 
 https://www.pclambert.net/data/rott2b.dta
 }
 \examples{
-data(breastcancer)
+data(bcrot)
 }
 \keyword{datasets}

@@ -34,8 +34,7 @@ library(SuperLearner)
 ```
 ## Load the Rotterdam Breast Cancer data set
 ```{r, warning=FALSE, message=FALSE}
-#data(breastcancer)
-load("data/breastcancer.RData")
+data(bcrot)
 ```
 
 ## Descriptive Analysis
