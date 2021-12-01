@@ -1,7 +1,7 @@
 ---
 title: "Causal Reasoning"
-author: "V Didelez, R Foraita"
-date: "30 11 2021"
+author: "V Didelez, R Foraita, C W Bang"
+date: "01 12 2021"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Causal Reasoning}
