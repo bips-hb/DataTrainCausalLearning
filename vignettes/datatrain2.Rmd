@@ -2,15 +2,12 @@
 title: "Causal Estimation"
 author: "V Didelez, R Foraita"
 date: "30 11 2021"
-output: html_document
----
-<!--
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Causal Estimation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
--->
+---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
