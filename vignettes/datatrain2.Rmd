@@ -2,12 +2,15 @@
 title: "Causal Estimation"
 author: "V Didelez, R Foraita"
 date: "30 11 2021"
+output: html_document
+---
+<!--
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Causal Estimation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
+-->
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -22,6 +25,7 @@ knitr::opts_chunk$set(
 # required for data management and plots
 library(data.table)
 library(tidyverse)
+library(ggplot2)
 
 # required for analysis
 library(stdReg)
@@ -33,7 +37,7 @@ library(AIPW)
 library(SuperLearner)
 ```
 ## Load the Rotterdam Breast Cancer data set
-```{r, warning=FALSE, message=FALSE}
+```{r message=FALSE, warning=TRUE}
 data(bcrot)
 ```
 
@@ -377,7 +381,8 @@ AIPW_SL <- AIPW::AIPW$new(Y = bcrot2$qol,
                           verbose = TRUE)
 
 # Fit the data to the AIPW object and check the balance of propensity scores
-AIPW_SL$fit()$summary()$plot.p_score()$plot.ip_weights()
+raipw <- AIPW_SL$fit()$summary()
+AIPW_SL$fit()$plot.p_score()$plot.ip_weights()
 
 # Truncate weights (default truncation is set to 0.025)
 AIPW_SL$fit()$summary(g.bound = c(0.05, 0.95))$plot.p_score()$plot.ip_weights()
@@ -397,5 +402,23 @@ cobalt::love.plot(hormon ~ age*enodes*pr_1 +
                   weights = bcrot2$aipw,
                   s.d.denom = "pooled",
                   thresholds = c(m = .1))
+```
+
+### Linear Model in the restricted sample
+```{r}
+# Main-effects linear regression
+lm.ar <- lm(qol ~ hormon + age + enodes + pr_1, data = bcrot2)
+```
+
+### Compare results in the restricted sample
+```{r}
+out <- rbind(c(2.07, rep(NA,3)), 
+             c(coef(summary(lm.ar))[2,1:2],confint(lm.ar)[2,]),
+             c(summary(model_sm2)$coefficients[2,1:2], confint(model_sm2)[2,]),
+             summary(fit.std, contrast = "difference", reference = "0")$est.table[2,],
+             raipw$estimates$RD)
+dimnames(out) <- list(c("True ATE", "LM", "IPW", "RS", "AIPW"),
+                      c("Estimate", "SE", "lower", "upper"))
+print(round(out,3))
 ```
 
