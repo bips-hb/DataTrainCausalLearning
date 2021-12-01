@@ -1,5 +1,5 @@
-\name{tcga}
-\alias{tcga}
+\name{tcgas}
+\alias{tcgas}
 \docType{data}
 \title{
 The Cancer Genome Atlas's Study of Head and Neck Squamous Cell Carcinoma
@@ -7,7 +7,7 @@ The Cancer Genome Atlas's Study of Head and Neck Squamous Cell Carcinoma
 \description{
 The Cancer Genome Atlas (TCGA, https://www.cancer.gov/tcga), a landmark cancer genomics program, molecularly characterized over 20,000 primary cancer and matched normal samples spanning 33 cancer types.
 }
-\usage{data("tcga")}
+\usage{data("tcgas")}
 \format{
   A data frame with 362 observations on the following 8 variables.
   \describe{
@@ -28,7 +28,7 @@ https://portal.gdc.cancer.gov/projects/TCGA-HNSC}
 The Cancer Genome Atlas Network. Comprehensive genomic characterization of head and neck squamous cell carcinomas. Nature 517, 576–582 (2015).
 }
 \examples{
-data(tcga)
-plot(tcga)
+data(tcgas)
+plot(tcgas)
 }
 \keyword{datasets}
