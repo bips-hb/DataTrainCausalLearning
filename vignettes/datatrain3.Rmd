@@ -4,13 +4,18 @@ author: "V Didelez, C W Bang"
 date: "01 12 2021"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Causal Reasoning}
+  %\VignetteIndexEntry{Causal Discovery}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.width = 6, message = F, warning = F, cache = T, eval = F)
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.width = 6, 
+                      message = F, 
+                      warning = F, 
+                      cache = T, 
+                      eval = F)
 ```
 
 
