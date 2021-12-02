@@ -124,13 +124,9 @@ plot(dag(~X1, ~L, ~X2*X1*L, ~Y*L))
 
 ```{r}
 N <- 1000
-
 x1 <- sample(c(1,0), N, replace = T)
-
 l <- rnorm(N, 1, 2)
-
-p <- 1/(1 + exp(-x1 * l + 2)) 
-
+p <- 1/(1 + exp(-1.5*x1 * l + 2)) 
 x2 <- rbinom(N, 1, p)
              
 y <- 0.5 * l + rnorm(N, 2)
@@ -156,17 +152,11 @@ plot(dag(~X1, ~U, ~L*X1*U, ~X2*X1*L, ~Y*L*U*X1*X2))
 
 ```{r}
 N <- 1000
-
 x1 <- sample(c(1,0), N, replace = T)
-
 u <- rnorm(N, 2)
-
 l <- 2 * x1 - u + rnorm(N, 1, 2)
-
 p <- 1/(1 + exp(-3 * x1 + l)) 
-
 x2 <- rbinom(N, 1, p)
-
 y <- u + x1 + l + x2 + rnorm(N)
 ```
 
@@ -182,7 +172,6 @@ summary(lm(y ~ x1 + x2 + l))$coefficients
 ### Randomising $X_2$
 ```{r}
 x2_new <- sample(c(1,0), N, replace = T)
-
 y_new <- u + x1 + l + x2_new + rnorm(N)
 ```
 
@@ -194,9 +183,7 @@ summary(lm(y_new ~ x1 + x2_new))$coefficients
 
 ```{r}
 log_model <- glm(x2 ~ x1 + l, family = binomial(link="logit"))
-
 p_hat <- predict(log_model, type = "response")
-
 w <- (x2 * p_hat + (1 - x2) * (1 - p_hat))^(-1)
 ```
 
