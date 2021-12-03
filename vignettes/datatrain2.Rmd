@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 
 ## Load packages
 ```{r, warning=FALSE, message=FALSE}
+library(DataTrainCausalLearning)
 # required for data management and plots
 library(data.table)
 library(tidyverse)
@@ -34,7 +35,7 @@ library(AIPW)
 library(SuperLearner)
 ```
 ## Load the Rotterdam Breast Cancer data set
-```{r message=FALSE, warning=TRUE}
+```{r}
 data(bcrot)
 ```
 
