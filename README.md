@@ -8,7 +8,7 @@ Install the package `devtools` from CRAN. If you are not using the RStudio Serve
 devtools::install_github("bips-hb/DataTrainCausalLearning", build_vignettes = TRUE)
 
 # update all packages (takes ~ 10 minutes on the RStudio Server)
-# building the vignettes will take also a while....
+# building the vignettes will aso take a while....
 
 library(DataTrainCausalLearning)
 install_the_rest()              # this takes again a few minutes
