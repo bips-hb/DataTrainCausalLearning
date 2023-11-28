@@ -17,15 +17,21 @@ Depends: R (>= 4.0.0)
 Imports:
   AIPW,
   BiocManager,
+  bnlearn, 
   cobalt,  
   data.table,
+  dagitty,
   GeneralisedCovarianceMeasure,
+  gRbase,
   ipw,
+  kpcalg,
+  pcalg,
   sandwich,
   stdReg,
   SuperLearner,
   survey,
-  tidyverse
+  tidyverse,
+  V8
 URL: https://github.com/bips-hb/DataTrainCausalLearning
 VignetteBuilder: knitr
 License: GPL-3

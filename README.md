@@ -1,15 +1,25 @@
 # DataTrainCausalLearning
-Practicals for the Data Train Course "Causal learning" 2021 (V Didelez)
+Practicals for the Data Train Course ["Causal learning" 2023 (V Didelez)](https://www.bremen-research.de/data-train/courses/course-details?event_id=49)
 
 ## Installation
-Install the package `devtools` from CRAN. If you are not using the RStudio Server, make sure that Rtools40 is installed on your computer. Then run the following commands:
+Install the following programs **before** the course:
+
+- R version [4.3.2](https://cran.r-project.org)
+- Windows user needs also to install [RTools4.3](https://cran.r-project.org/bin/windows/Rtools/rtools43/rtools.html)
+- We recommend to download [RStudio](https://posit.co/download/rstudio-desktop/)
 
 ```R
-devtools::install_github("bips-hb/DataTrainCausalLearning", build_vignettes = TRUE)
+# Install the following R packages within R/RStudio (please keep the order)
 
-# update all packages (takes ~ 10 minutes on the RStudio Server)
-# building the vignettes will aso take a while....
+install.packages(c("remotes", "BiocManager"))
+BiocManager::install("graph")
+BiocManager::install("RBGL")
+BiocManager::install("Rgraphviz")
+
+# now install our course package
+remotes::install_github("bips-hb/DataTrainCausalLearning", build_vignettes = TRUE)
+
+# ... building the vignettes will aso take a while.... please be patient.
 
 library(DataTrainCausalLearning)
-install_the_rest()              # this takes again a few minutes
 ```
