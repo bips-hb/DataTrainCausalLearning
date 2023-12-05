@@ -1,7 +1,7 @@
 ---
 title: "Causal Discovery"
 author: "V Didelez, C W Bang"
-date: "01 12 2021"
+date: "05 12 2023"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Causal Discovery}
@@ -18,13 +18,11 @@ knitr::opts_chunk$set(echo = TRUE,
                       eval = TRUE)
 ```
 
-
 ```{r}
 library(DataTrainCausalLearning)
 library(tidyverse)
 library(pcalg)
 ```
-
 
 # Descriptive statistics
 
@@ -32,21 +30,17 @@ library(pcalg)
 data("tcgas")
 ```
 
-
 ```{r dim_tcga}
 dim(tcgas)
 ```
-
 
 ```{r head_tcga}
 head(tcgas)
 ```
 
-
 ```{r plot_tcga}
 plot(tcgas, cex = 0.3)
 ```
-
 
 ```{r hist_tcga}
 tcgas %>% 
@@ -57,8 +51,6 @@ tcgas %>%
   facet_wrap(~ key)
 
 ```
-
-
 
 # PC-algorithm
 
@@ -71,7 +63,6 @@ pcfit <- pc(
   maj.rule = T, solve.confl = T, u2pd = "relaxed"
 )
 ```
-
 
 ```{r fitalpha_tcga}
 plot(pc(
@@ -110,25 +101,21 @@ fcifit <- fci(
 plot(fcifit)
 ```
 
-
 # GES-algorithm
 
 ```{r fitges_tcga}
 gesfit <- ges(new("GaussL0penObsScore", tcgas))
 ```
 
-
 ```{r plotges}
 plot(gesfit$essgraph)
 ```
-
 
 # LiNGAM
 
 ```{r fitlingam_tcga}
 lingamfit <- lingam(tcgas)
 ```
-
 
 ```{r lingamfct}
 lingam2graph <- function(fit,data){
@@ -144,26 +131,21 @@ lingam2graph <- function(fit,data){
 
 ```
 
-
 ```{r graphlingam_tcga}
 lingamgraph <- lingam2graph(fit = lingamfit, # fitted object
                             data = tcgas # data used to fit the object
                             )
 ```
 
-
 ```{r plotlingam}
 plot(lingamgraph)
 ```
-
-
 
 # Kernel independence tests
 
 ```{r lib_kpcalg}
 library(kpcalg)
 ```
-
 
 ```{r kpcfit}
 pcfit_kernel05 <- pc(suffStat = list(data = tcgas, ic.method = "dcc.perm"),
@@ -181,7 +163,6 @@ pcfit_kernel10 <- pc(suffStat = list(data = tcgas, ic.method = "dcc.perm"),
                      )
 ```
 
-
 ```{r plotkernel}
 par(mfrow = c(1,2))
 
@@ -189,13 +170,11 @@ plot(pcfit_kernel05, main = "alpha = 5%")
 plot(pcfit_kernel10, main = "alpha = 10%")
 ```
 
-
 # Generalised Covariance Measure
 
 ```{r gcm_lib}
 library(GeneralisedCovarianceMeasure)
 ```
-
 
 ```{r gcm_wrapper}
 use_gcm <- function(x, y, S, suffStat){
@@ -211,7 +190,6 @@ use_gcm <- function(x, y, S, suffStat){
 } 
 
 ```
-
 
 ```{r pcfit_gcm}
 pcfit_gcm05 <- pc(suffStat = list(data = tcgas, alpha = 0.05),
@@ -229,7 +207,6 @@ pcfit_gcm10 <- pc(suffStat = list(data = tcgas, alpha = 0.1),
                   )
 ```
 
-
 ```{r plot_gcm}
 par(mfrow = c(1,2))
 
@@ -237,15 +214,11 @@ plot(pcfit_gcm05, main = "alpha = 5%")
 plot(pcfit_gcm10, main = "alpha = 10%")
 ```
 
-
-
 # Discrete data
-
 
 ```{r fit_dis}
 data("tcgadisc")
 ```
-
 
 ```{r disICfunc}
 disCItest_mod <- function(x, y, S, suffStat){
@@ -258,7 +231,6 @@ disCItest_mod <- function(x, y, S, suffStat){
              verbose = FALSE, n.min = -1)
 }
 ```
-
 
 ```{r fitdis}
 
@@ -277,14 +249,12 @@ pcfit_d10 <- pc(suffStat = list(dm = tcgadisc, adaptDF = F),
                 )
 ```
 
-
 ```{r plot_dis}
 par(mfrow = c(1,2))
 
 plot(pcfit_d05@graph, main = "alpha = 5%")
 plot(pcfit_d10@graph, main = "alpha = 10%")
 ```
-
 
 # Comparison
 
@@ -302,27 +272,6 @@ par(mfrow = c(1,1))
 plot(pcfit_d10@graph, main = "Discrete")
 ```
 
-
-```{r libgrbase}
-library(gRbase)
-```
-
-
-```{r pa}
-parents("HMGA2", as(gesfit$essgraph, "graphNEL"))
-```
-
-
-```{r ch}
-children("HMGA2", as(gesfit$essgraph, "graphNEL"))
-```
-
-
-```{r an}
-ancestors("HMGA2", as(gesfit$essgraph, "graphNEL"))
-```
-
-
 ```{r possan}
 possAn(t(as(as(gesfit$essgraph, "graphNEL"), "Matrix")), # the graph has to be specified as a matrix
        x = 4, # indicates the position of the variables of interest
@@ -330,11 +279,9 @@ possAn(t(as(as(gesfit$essgraph, "graphNEL"), "Matrix")), # the graph has to be s
        )
 ```
 
-
 ```{r names_possan}
 colnames(tcgas)[c(1,4,5,6,7)]
 ```
-
 
 ```{r possde}
 possDe(t(as(as(gesfit$essgraph, "graphNEL"), "Matrix")), 
@@ -347,18 +294,15 @@ possDe(t(as(as(gesfit$essgraph, "graphNEL"), "Matrix")),
 colnames(tcgas)[c(2,3,4,8)]
 ```
 
-
 # IDA algorithm
 
 ```{r lm1_fcga}
 summary(lm(CDK6 ~ HMGA2 + BAX + CDKN2A + CDKN1A + MDM2 + SERPINE1 + THBS1, data = tcgas))$coefficients
 ```
 
-
 ```{r print_names}
 names(tcgas)
 ```
-
 
 ```{r ida_local}
 ida(x.pos = 4, # position of HMGA2 in the dataset 
@@ -382,11 +326,9 @@ ida(x.pos = 4, # position of HMGA2 in the dataset
       ) -> idaest1
 ```
 
-
 ```{r lm2_fcga}
 summary(lm(CDK6 ~ HMGA2 + SERPINE1 + THBS1, data = tcgas))$coefficients
 ```
-
 
 ```{r ida_optimal}
 ida(x.pos = 4,
@@ -399,11 +341,9 @@ ida(x.pos = 4,
       )
 ```
 
-
 ```{r lm3_fcga}
 summary(lm(CDK6 ~ HMGA2 + SERPINE1 + THBS1 + MDM2, data = tcgas))$coefficients
 ```
-
 
 ```{r ida_alt}
 ida(x.pos = 5,
@@ -415,10 +355,3 @@ ida(x.pos = 5,
     verbose = T
       )
 ```
-
-
-
-
-
-
-
