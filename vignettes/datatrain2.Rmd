@@ -1,7 +1,7 @@
 ---
 title: "Causal Estimation"
 author: "V Didelez, R Foraita"
-date: "05 12 2023"
+date: "28 11 2025"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Causal Estimation}
@@ -11,18 +11,18 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,
-  eval = TRUE,
   collapse = TRUE,
-  fig.width = 6)
+  fig.width = 6,
+  echo = FALSE,
+  eval = FALSE
+  )
 ```
 
 ## Load packages
 ```{r, warning=FALSE, message=FALSE}
-library(DataTrainCausalLearning)
 # required for data management and plots
-library(data.table)
-library(tidyverse)
+# library(data.table)
+library(dplyr)
 library(ggplot2)
 
 # required for analysis
@@ -35,13 +35,14 @@ library(AIPW)
 library(SuperLearner)
 ```
 ## Load the Rotterdam Breast Cancer data set
-```{r}
+```{r load1}
+library(DataTrainCausalLearning)
 data(bcrot)
 ```
 
 ## Descriptive Analysis
 Compare descriptively QOL for those who do and do not take hormonal therapy 
-```{r}
+```{r descriptive}
 # qol
 ggplot(bcrot, aes(x=qol, after_stat(density))) +
   geom_histogram(fill="#69b3a2", color="#e9ecef", alpha=0.9, binwidth = 5) +
@@ -49,8 +50,8 @@ ggplot(bcrot, aes(x=qol, after_stat(density))) +
   theme_light()
 
 # age ~ hormon
-plot.age <- ggplot(bcrot, aes(x=age, after_stat(density)), fill=as.factor(hormon)) +
-    geom_histogram(aes(fill=as.factor(hormon)), color=c("#e9ecef"), binwidth = 2) +
+plot.age <- ggplot(bcrot, aes(x=age, after_stat(density), fill=as.factor(hormon))) +
+    geom_histogram(color="#e9ecef", binwidth = 2) +
     facet_grid(as.factor(hormon) ~ .) +
     labs(x = "Age", y = "Density") +
     scale_fill_manual(values=c("#69b3a2", "#337CA0"),
@@ -71,19 +72,24 @@ ggplot(bcrot, aes(y=age, x=as.factor(hormon), fill=as.factor(hormon))) +
 
 
 # Lymph nodes ~ hormon
-plot.nodes <- ggplot(bcrot, aes(x=nodes, after_stat(density)), fill=as.factor(hormon)) +
-    geom_histogram(aes(fill=as.factor(hormon)), color=c("#e9ecef"), binwidth = 1) +
-    facet_grid(as.factor(hormon) ~ .) +
-    labs(x = "Number of positive lymph nodes", y = "Density") +
-    scale_fill_manual(values=c("#69b3a2", "#337CA0"),
-                      name="Hormonal\ntreatment",
-                      breaks=c("0", "1"),
-                      labels=c("no", "yes")) +
-    theme_light()
+plot.nodes <- ggplot(bcrot, aes(x = nodes, y = after_stat(density), fill = as.factor(hormon))) +
+  geom_histogram(color = "#e9ecef", binwidth = 1) +
+  facet_grid(as.factor(hormon) ~ .) +
+  labs(
+    x = "Number of positive lymph nodes",
+    y = "Density"
+  ) +
+  scale_fill_manual(
+    values = c("#69b3a2", "#337CA0"),
+    name = "Hormonal\ntreatment",
+    breaks = c("0", "1"),
+    labels = c("no", "yes")
+  ) +
+  theme_light()
 plot.nodes
 
-ggplot(bcrot, aes(x=enodes, after_stat(density)), fill=as.factor(hormon)) +
-  geom_histogram(aes(fill=as.factor(hormon)), color=c("#e9ecef"), binwidth = 0.1) +
+ggplot(bcrot, aes(x=enodes, after_stat(density), fill=as.factor(hormon))) +
+  geom_histogram(color=c("#e9ecef"), binwidth = 0.1) +
   facet_grid(as.factor(hormon) ~ .) +
   labs(x = "Number of positive lymph nodes (transformed: exp(-0.12 * nodes))", 
        y = "Density") +
@@ -105,8 +111,8 @@ ggplot(bcrot, aes(x=as.factor(hormon), y=enodes, fill=as.factor(hormon))) +
 
 
 # PgR (fmol/l), log ~ hormon
-ggplot(bcrot, aes(x=pr_1, after_stat(density)), fill=as.factor(hormon)) +
-  geom_histogram(aes(fill=as.factor(hormon)), color=c("#e9ecef"), binwidth = 0.5) +
+ggplot(bcrot, aes(x=pr_1, after_stat(density), fill=as.factor(hormon))) +
+  geom_histogram(color="#e9ecef", binwidth = 0.5) +
   facet_grid(as.factor(hormon) ~ .) +
   labs(x = "PgR [fmol/l] (transformed: log(pr)", y = "Density") +
   scale_fill_manual(values=c("#69b3a2", "#337CA0"),
@@ -127,22 +133,23 @@ ggplot(bcrot, aes(y=pr_1, x=as.factor(hormon), fill=as.factor(hormon))) +
 ```
 
 ## Analysis
-### Linear Model
-```{r}
+### (Un-)Adjusted Linear Model
+
+```{r ulm}
 # Unadjusted linear regression
 lm.ua <- lm(qol ~ hormon, data = bcrot)
 summary(lm.ua)
 
 ```
 
-```{r}
+```{r mlm}
 # Main-effects linear regression
 lm.a <- lm(qol ~ hormon + age + enodes + pr_1, data = bcrot)
 summary(lm.a)
 
 ```
 ### Propensity score
-```{r, echo = TRUE}
+```{r prop}
 ps <- glm(hormon ~ age + enodes + pr_1, 
           data = bcrot, 
           family = binomial(link="logit"))
@@ -177,7 +184,7 @@ ggplot(data = bcrot, aes(x = ps, after_stat(density), fill = as.factor(hormon)))
 ```
 
 ### Inverse Probability Treatment Weighting 
-```{r}
+```{r ipw}
 bcrot$w <- (as.numeric(as.character(bcrot$hormon)) / bcrot$ps) + 
            ((1 - as.numeric(as.character(bcrot$hormon))) / (1 - bcrot$ps))
 summary(bcrot$w)
@@ -202,7 +209,7 @@ cobalt::love.plot(hormon ~ age + enodes + pr_1,
 
 
 ### Use subset
-```{r}
+```{r sub}
 plot.age
 plot.nodes
 
@@ -217,7 +224,7 @@ table(bcrot$hormon)
 
 
 ### Estimate Marginal structural model using the IPW package
-```{r}
+```{r msm}
 ipw2 <- ipw::ipwpoint(exposure = hormon, 
                       family = "binomial", link = "logit",
                       denominator = ~ age + age.2 + enodes + age*pr_1,
@@ -244,7 +251,7 @@ confint(model_sm2)
 ```
 
 ### Estimate Marginal structural model "by hand"
-```{r}
+```{r msmhand}
 ps <- glm(hormon ~ age + age.2 + enodes + age*pr_1,
           data = bcrot2, 
           family = binomial(link="logit"))
@@ -265,7 +272,7 @@ sandwichCI <- c(coef(model_w)[2] - 1.96 * sandwich_se[2],
 ```
 
 ### Compare confidence intervals
-```{r}
+```{r ci}
 msm.out <- rbind(cbind(coef(model_w), confint(model_w))[2,],
                  c(coef(model_w)[2], sandwichCI),
                  cbind(coef(model_sm2), confint(model_sm2))[2,])
@@ -277,7 +284,7 @@ msm.out
 
 
 ### Investigate (extreme) weights
-```{r}
+```{r weights}
 # truncate weights
 wq <- quantile(bcrot2$ipw, probs = c(0.025, 0.975)) 
 bcrot2$wt <- if_else(bcrot2$ipw < wq[1], wq[1], bcrot2$ipw)
@@ -350,7 +357,7 @@ cobalt::love.plot(hormon ~ age + age.2 + enodes + age*pr_1,
 
 
 ### Regression standardization
-```{r}
+```{r stdreg}
 fit <- glm(qol ~ hormon*age + hormon*age.2 + hormon*enodes + hormon*pr_1 + age*pr_1,
            data = bcrot2)
 fit.std <- stdGlm(fit = fit, data = as.data.frame(bcrot2), X = "hormon")
@@ -365,7 +372,7 @@ summary(fit.std, contrast = "difference", reference = "0")
 
 
 ### Double machine learning - Augmented Inverse Probability Weighting
-```{r, warning=FALSE}
+```{r dml, warning=FALSE}
 # Build SuperLearner libraries for outcome (Q) and exposure models (g)
 sl.lib <- c("SL.mean","SL.glm")
 
@@ -403,13 +410,13 @@ cobalt::love.plot(hormon ~ age*enodes*pr_1 +
 ```
 
 ### Linear Model in the restricted sample
-```{r}
+```{r lmres}
 # Main-effects linear regression
 lm.ar <- lm(qol ~ hormon + age + enodes + pr_1, data = bcrot2)
 ```
 
 ### Compare results in the restricted sample
-```{r}
+```{r comp2}
 out <- rbind(c(2.07, rep(NA,3)), 
              c(coef(summary(lm.ar))[2,1:2],confint(lm.ar)[2,]),
              c(summary(model_sm2)$coefficients[2,1:2], confint(model_sm2)[2,]),

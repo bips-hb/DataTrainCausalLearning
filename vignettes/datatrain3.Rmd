@@ -1,7 +1,7 @@
 ---
 title: "Causal Discovery"
-author: "V Didelez, C W Bang"
-date: "05 12 2023"
+author: "V Didelez, L Bergen, C W Bang"
+date: "28 11 2025"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Causal Discovery}
@@ -12,16 +12,18 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
                       fig.width = 6, 
-                      message = F, 
-                      warning = F, 
-                      cache = T, 
-                      eval = TRUE)
+                      message = FALSE, 
+                      warning = FALSE, 
+                      cache = FALSE, 
+                      eval = FALSE,
+                      echo = FALSE)
 ```
 
-```{r}
-library(DataTrainCausalLearning)
-library(tidyverse)
+```{r packages}
+library(dplyr)
+library(ggplot2)
 library(pcalg)
+library(DataTrainCausalLearning)
 ```
 
 # Descriptive statistics
@@ -141,29 +143,24 @@ lingamgraph <- lingam2graph(fit = lingamfit, # fitted object
 plot(lingamgraph)
 ```
 
-# Kernel independence tests
-
-```{r lib_kpcalg}
-library(kpcalg)
-```
+# (Randomized) Kernel Conditional Independence (CI) test
 
 ```{r kpcfit}
-pcfit_kernel05 <- pc(suffStat = list(data = tcgas, ic.method = "dcc.perm"),
-                     indepTest = kernelCItest,
+pcfit_kernel05 <- pc(suffStat = list(data = tcgas),
+                     indepTest = RCIT, 
                      alpha = 0.05,
                      labels = colnames(tcgas),
                      maj.rule = TRUE, solve.confl = TRUE, u2pd = "relaxed"
                      )
 
-pcfit_kernel10 <- pc(suffStat = list(data = tcgas, ic.method = "dcc.perm"),
-                     indepTest = kernelCItest,
+pcfit_kernel10 <- pc(suffStat = list(data = tcgas),
+                     indepTest = RCIT,
                      alpha = 0.1,
                      labels = colnames(tcgas),
                      maj.rule = TRUE, solve.confl = TRUE, u2pd = "relaxed"
                      )
-```
 
-```{r plotkernel}
+# plot both graphs
 par(mfrow = c(1,2))
 
 plot(pcfit_kernel05, main = "alpha = 5%")
@@ -171,36 +168,25 @@ plot(pcfit_kernel10, main = "alpha = 10%")
 ```
 
 # Generalised Covariance Measure
+Use the wrapper functions `RCIT` and `GCM` that are provided in this package.
 
-```{r gcm_lib}
-library(GeneralisedCovarianceMeasure)
-```
 
-```{r gcm_wrapper}
-use_gcm <- function(x, y, S, suffStat){
-  
-  a <- as.matrix(suffStat$data)[,x]
-  b <- as.matrix(suffStat$data)[,y]
-  c <- as.matrix(suffStat$data)[,S]
-  
-  test <- gcm.test(a, b, c, alpha = suffStat$alpha)
-  p_value <- test[[1]]
-  
-  return(p_value)
-} 
+<!-- ```{r gcm_lib} -->
+<!-- library(GeneralisedCovarianceMeasure) -->
+<!-- ``` -->
 
-```
+
 
 ```{r pcfit_gcm}
-pcfit_gcm05 <- pc(suffStat = list(data = tcgas, alpha = 0.05),
-                  indepTest = use_gcm,
+pcfit_gcm05 <- pc(suffStat = list(data = tcgas), 
+                  indepTest = GCM,
                   alpha = 0.05,
                   labels = colnames(tcgas),
                   maj.rule = TRUE, solve.confl = TRUE, u2pd = "relaxed"
                   )
 
-pcfit_gcm10 <- pc(suffStat = list(data = tcgas, alpha = 0.1),
-                  indepTest = use_gcm,
+pcfit_gcm10 <- pc(suffStat = list(data = as.matrix(tcgas), alpha = alpha),
+                  indepTest = GCM,
                   alpha = 0.1,
                   labels = colnames(tcgas),
                   maj.rule = TRUE, solve.confl = TRUE, u2pd = "relaxed"
@@ -256,6 +242,9 @@ plot(pcfit_d05@graph, main = "alpha = 5%")
 plot(pcfit_d10@graph, main = "alpha = 10%")
 ```
 
+
+
+
 # Comparison
 
 ```{r compare_fit}
@@ -267,7 +256,7 @@ plot(gesfit$essgraph, main = "GES")
 plot(lingamgraph, main = "LiNGAM")
 par(mfrow = c(1,2))
 plot(pcfit_gcm10@graph, main = "GCM")
-plot(pcfit_kernel10@graph, main = "Kernel")
+# plot(pcfit_kernel10@graph, main = "Kernel")
 par(mfrow = c(1,1))
 plot(pcfit_d10@graph, main = "Discrete")
 ```

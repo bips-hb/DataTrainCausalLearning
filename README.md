@@ -1,25 +1,46 @@
-# DataTrainCausalLearning
-Practicals for the Data Train Course ["Causal learning" 2023 (V Didelez)](https://www.bremen-research.de/data-train/courses/course-details?event_id=49)
+# Data train course "Causal Learning" (Nov 2025) Uni Bremen
 
-## Installation
-Install the following programs **before** the course:
+Practicals for the Data Train Course ["Causal learning" 2023 (V Didelez)](https://www.bremen-research.de/data-train/courses/course-details?event_id=119)
 
-- R version [4.3.2](https://cran.r-project.org)
-- Windows user needs also to install [RTools4.3](https://cran.r-project.org/bin/windows/Rtools/rtools43/rtools.html)
-- We recommend to download [RStudio](https://posit.co/download/rstudio-desktop/)
+
+## Install the following programs **before** the course:
+
+If you use your own machine, ensure you have R v4.0.0 or higher. 
+**Windows users, please make sure that rtools is installed on your computer!** 
+(https://cran.r-project.org/bin/windows/Rtools/)
+
+
+
+## Package installation
+Please use the R package `pak` to install the packages. It automatically 
+chooses the right platform like, e.g., CRAN, Bioconductor, also for 
+dependency packages.
 
 ```R
 # Install the following R packages within R/RStudio (please keep the order)
 
-install.packages(c("remotes", "BiocManager"))
-BiocManager::install("graph")
-BiocManager::install("RBGL")
-BiocManager::install("Rgraphviz")
+install.packages(c("pak"))
+library(pak)
 
-# now install our course package
-remotes::install_github("bips-hb/DataTrainCausalLearning", build_vignettes = TRUE)
+pkg_install(c("AIPW", "bnlearn", "cobalt", "dagitty", "dplyr",
+              "GeneralisedCovarianceMeasure", "ggplot2", "gRbase",
+              "ipw", "pcalg", "sandwich", "stdReg","SuperLearner",
+              "survey", "tools"))
+```
+
+To install the course R-package from github, simply type:
+```R
+pak::pkg_install("bips-hb/DataTrainCausalLearning")
+
+# render the necessary vignettes with
+tools::buildVignettes(dir = system.file(package = "DataTrainCausalLearning"))
 
 # ... building the vignettes will aso take a while.... please be patient.
 
+# and load the package.
 library(DataTrainCausalLearning)
+
+show_practicals()
 ```
+
+

@@ -18,6 +18,7 @@
 .Rproj.user/
 DataTrainCausalLearning.Rproj
 .Rbuildignore
+render.R
 
 # produced vignettes
 vignettes/*.html

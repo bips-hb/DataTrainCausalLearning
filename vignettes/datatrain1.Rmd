@@ -1,7 +1,7 @@
 ---
 title: "Causal Reasoning"
 author: "V Didelez, R Foraita, C W Bang"
-date: "05 12 2023"
+date: "28 11 2023"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Causal Reasoning}
@@ -11,10 +11,10 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,
-  eval = TRUE,
   collapse = TRUE,
-  fig.width = 6)
+  fig.width = 6,  
+  echo = FALSE,
+  eval = FALSE)
 ```
 
 
@@ -39,7 +39,7 @@ g <- dagitty("dag {
               prior.disease -> ESRD
               }")
 
-plot(graphLayout(g))
+plot(dagitty::graphLayout(g))
 ```
 
 ## Making 'earlier smoking' unobserved
@@ -55,7 +55,7 @@ adjustmentSets(g.unob, type = "minimal", effect = "total")
 ```
 
 ## List testable implications
-```{r}
+```{r testimp}
 print(impliedConditionalIndependencies(g))
 print(impliedConditionalIndependencies(g.unob))
 ```
@@ -88,7 +88,7 @@ sum(pfad$open)
 
 
 ## Insert new node
-```{r}
+```{r newNode}
 g2 <- dagitty("dag {
               ESRD [outcome]
               current.smoking [exposure]
@@ -112,17 +112,18 @@ adjustmentSets(g2)
 
 # Simulated data examples
 
-```{r}
+```{r load-gRbase, warning=FALSE}
 library(gRbase)
 ```
 
 ## Example 1
 
-```{r, out.width="50%", echo = F}
+```{r plot1, out.width="50%", echo = F}
 plot(dag(~X1, ~L, ~X2*X1*L, ~Y*L))
 ```
 
-```{r}
+```{r ex1}
+set.seed(45897)
 N <- 1000
 x1 <- sample(c(1,0), N, replace = T)
 l <- rnorm(N, 1, 2)
@@ -132,25 +133,26 @@ x2 <- rbinom(N, 1, p)
 y <- 0.5 * l + rnorm(N, 2)
 ```
 
-```{r}
+```{r sum1}
 summary(lm(y ~ x1))$coefficients
 ```
 
-```{r}
+```{r sum2}
 summary(lm(y ~ x1 + x2))$coefficients
 ```
 
-```{r}
+```{r sum3}
 summary(lm(y ~ x1 + x2 + l))$coefficients
 ```
 
 ## Example 2
 
-```{r, out.width="50%", echo = F}
+```{r ex2, out.width="50%", echo = F}
 plot(dag(~X1, ~U, ~L*X1*U, ~X2*X1*L, ~Y*L*U*X1*X2))
 ```
 
-```{r}
+```{r sim2}
+set.seed(87642)
 N <- 1000
 x1 <- sample(c(1,0), N, replace = T)
 u <- rnorm(N, 2)
@@ -160,33 +162,33 @@ x2 <- rbinom(N, 1, p)
 y <- u + x1 + l + x2 + rnorm(N)
 ```
 
-```{r}
+```{r sum4}
 summary(lm(y ~ x1 + x2))$coefficients
 ```
 
-```{r}
+```{r sum5}
 summary(lm(y ~ x1 + x2 + l))$coefficients
 ```
 
 
 ### Randomising $X_2$
-```{r}
+```{r rand}
 x2_new <- sample(c(1,0), N, replace = T)
 y_new <- u + x1 + l + x2_new + rnorm(N)
 ```
 
-```{r}
+```{r sum6}
 summary(lm(y_new ~ x1 + x2_new))$coefficients
 ```
 
 ### Inverse probability weights
 
-```{r}
+```{r ipw}
 log_model <- glm(x2 ~ x1 + l, family = binomial(link="logit"))
 p_hat <- predict(log_model, type = "response")
 w <- (x2 * p_hat + (1 - x2) * (1 - p_hat))^(-1)
 ```
 
-```{r}
+```{r sum7}
 summary(lm(y ~ x1 + x2, weights = w))$coefficients
 ```

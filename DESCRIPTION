@@ -1,7 +1,7 @@
 Package: DataTrainCausalLearning
 Type: Package
-Title: Practicals for the Data Train Course "Causal learning" 2021 (V Didelez)
-Version: 1.0.0
+Title: Practicals for the Data Train Course "Causal learning" 2025 (V Didelez)
+Version: 1.2.5
 Author: Authors@R: 
     c(person(given = "Ronja",
              family = "Foraita",
@@ -14,30 +14,29 @@ Author: Authors@R:
 Maintainer: R Foraita <foraita@leibniz-bips.de>
 Description: Installs all necessary packages and provides R codes for the parts (1) causal reasoning, (2) causal estimation and (3) causal learning.
 Depends: R (>= 4.0.0)
-Imports:
-  AIPW,
-  BiocManager,
-  bnlearn, 
-  cobalt,  
-  data.table,
-  dagitty,
-  GeneralisedCovarianceMeasure,
-  gRbase,
-  ipw,
-  kpcalg,
-  pcalg,
-  sandwich,
-  stdReg,
-  SuperLearner,
-  survey,
-  tidyverse,
-  V8
 URL: https://github.com/bips-hb/DataTrainCausalLearning
 VignetteBuilder: knitr
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
-Suggests: 
-    rmarkdown,
-    knitr
+RoxygenNote: 7.3.3
+Imports:  pak
+Suggests: AIPW,
+          bnlearn, 
+          cobalt,  
+          data.table,
+          dagitty,
+          dplyr,
+          GeneralisedCovarianceMeasure,
+          ggplot2,
+          gRbase,
+          ipw,
+          pcalg,
+          Rgraphviz,
+          sandwich,
+          stdReg,
+          SuperLearner,
+          survey,
+          V8,
+          knitr,
+          rmarkdown
