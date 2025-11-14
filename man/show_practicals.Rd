@@ -4,7 +4,7 @@
 \alias{show_practicals}
 \title{Show Practicals}
 \usage{
-show_practicals(nr)
+show_practicals()
 }
 \value{
 opens the folder with the practicals

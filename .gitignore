@@ -18,9 +18,11 @@
 .Rproj.user/
 DataTrainCausalLearning.Rproj
 .Rbuildignore
-render.R
 
 # produced vignettes
+*.html
+render.R
+vignettes_unbrauchbar
 vignettes/*.html
 vignettes/*.pdf
 
@@ -37,6 +39,5 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
-inst/doc
 /doc/
 /Meta/

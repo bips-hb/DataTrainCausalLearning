@@ -14,8 +14,8 @@ install_more <- function(){
   # 
   # library(pak)
   
-  pkg_install(c("AIPW", "bnlearn", "cobalt", "comets","dagitty", "dplyr",
-                "GeneralisedCovarianceMeasure", "ggplot2", "gRbase",
+  pkg_install(c("AIPW", "bnlearn", "cobalt", "comets","dagitty", "tidyr",
+                "GeneralisedCovarianceMeasure", "gRbase",
                 "ipw", "pcalg", "sandwich", "stdReg","SuperLearner",
                 "survey", "tools"))
   pkg_install(("ericstrobl/RCIT"))
