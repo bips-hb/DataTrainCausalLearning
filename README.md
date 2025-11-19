@@ -1,6 +1,6 @@
 # Data train course "Causal Learning" (Nov 2025) Uni Bremen
 
-Practicals for the Data Train Course ["Causal learning" 2023 (V Didelez)](https://www.bremen-research.de/data-train/courses/course-details?event_id=119)
+Practicals for the Data Train Course ["Causal learning" 2025 (V Didelez)](https://www.bremen-research.de/data-train/courses/course-details?event_id=119)
 
 
 ## Install the following programs **before** the course:
