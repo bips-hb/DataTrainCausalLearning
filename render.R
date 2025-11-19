@@ -21,19 +21,19 @@ los(file_name = "datatrain3.Rmd",
 
 
 
-rmarkdown::render(input = file.path(system.file("doc", package = "DataTrainCausalLearning"), "datatrain1.Rmd"),
+rmarkdown::render(input = file.path(system.file("code", package = "DataTrainCausalLearning"), "datatrain1.Rmd"),
                   output_dir = getwd(),
-                  output_file = "CausalReasoning_code.html")
+                  output_file = "CausalReasoning.html")
 
 
-rmarkdown::render(input = file.path(system.file("doc", package = "DataTrainCausalLearning"), "datatrain2.Rmd"),
+rmarkdown::render(input = file.path(system.file("code", package = "DataTrainCausalLearning"), "datatrain2.Rmd"),
                   output_dir = getwd(),
-                  output_file = "CausalEstimation_code.html")
+                  output_file = "CausalEstimation.html")
 
 
-rmarkdown::render(input = file.path(system.file("doc", package = "DataTrainCausalLearning"), "datatrain3.Rmd"),
+rmarkdown::render(input = file.path(system.file("code", package = "DataTrainCausalLearning"), "datatrain3.Rmd"),
                   output_dir = getwd(),
-                  output_file = "CausalDiscovery_code.html")
+                  output_file = "CausalDiscovery.html")
 
 
 

@@ -19,13 +19,16 @@ dependency packages.
 ```R
 # Install the following R packages within R/RStudio (please keep the order)
 
-install.packages(c("pak"))
+install.packages("pak")
 library(pak)
+
+# Install a package from github, which we will need in Part 3
+pkg_install("ericstrobl/RCIT")
 ```
 
 To install the course R-package from github, simply type:
 ```R
-pak::pkg_install("bips-hb/DataTrainCausalLearning")
+pkg_install("bips-hb/DataTrainCausalLearning")
 
 # load the package.
 library(DataTrainCausalLearning)
@@ -37,8 +40,10 @@ install_more()
 
 ## Practicals
 
-Open the folder with all practicals:
+To open the practicals in your PDF reader, type
 ```R
-show_practicals()
+openPDF("Practical_part1_2025.pdf")
+openPDF("Practical_part2_2025.pdf")   
+openPDF("Practical_part3_2025.pdf")   
 ```
 

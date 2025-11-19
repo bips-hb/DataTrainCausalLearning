@@ -1,6 +1,6 @@
 ---
 title: "Causal Discovery"
-author: "V Didelez, C W Bang"
+author: "V Didelez, L Bergen"
 date: "28 11 2025"
 output: rmarkdown::html_vignette
 vignette: >
@@ -14,15 +14,17 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.width = 6, 
                       message = FALSE, 
                       warning = FALSE, 
-                      cache = FALSE, 
-                      eval = FALSE,
-                      echo = TRUE)
+                      cache = FALSE,
+                      echo = TRUE, 
+                      eval = FALSE)
 ```
 
 ```{r packages}
 library(tidyr)
+library(ggplot2)
 library(pcalg)
 library(DataTrainCausalLearning)
+library(RCIT)
 ```
 
 # Descriptive statistics
@@ -150,14 +152,14 @@ plot(lingamgraph)
 
 ```{r kpcfit}
 pcfit_kernel05 <- pc(suffStat = list(data = tcgas),
-                     indepTest = RCIT, 
+                     indepTest = DataTrainCausalLearning::RCIT, 
                      alpha = 0.05,
                      labels = colnames(tcgas),
                      maj.rule = TRUE, solve.confl = TRUE, u2pd = "relaxed"
                      )
 
 pcfit_kernel10 <- pc(suffStat = list(data = tcgas),
-                     indepTest = RCIT,
+                     indepTest = DataTrainCausalLearning::RCIT,
                      alpha = 0.1,
                      labels = colnames(tcgas),
                      maj.rule = TRUE, solve.confl = TRUE, u2pd = "relaxed"
@@ -172,12 +174,6 @@ plot(pcfit_kernel10, main = "alpha = 10%")
 
 # Generalised Covariance Measure
 Use the wrapper functions `RCIT` and `GCM` that are provided in this package.
-
-
-<!-- ```{r gcm_lib} -->
-<!-- library(GeneralisedCovarianceMeasure) -->
-<!-- ``` -->
-
 
 
 ```{r pcfit_gcm}

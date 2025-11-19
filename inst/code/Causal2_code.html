@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="V Didelez, R Foraita" />
+
+
+<title>Causal Estimation</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Causal Estimation</h1>
+<h4 class="author">V Didelez, R Foraita</h4>
+<h4 class="date">28 11 2025</h4>
+
+
+
+<div id="load-packages" class="section level2">
+<h2>Load packages</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># required for data management and plots</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co"># library(data.table)</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co"># required for analysis</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">library</span>(stdReg)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">library</span>(ipw)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">library</span>(survey)</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">library</span>(cobalt)</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="fu">library</span>(AIPW)</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="fu">library</span>(SuperLearner)</span></code></pre></div>
+</div>
+<div id="load-the-rotterdam-breast-cancer-data-set" class="section level2">
+<h2>Load the Rotterdam Breast Cancer data set</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(DataTrainCausalLearning)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">data</span>(bcrot)</span></code></pre></div>
+</div>
+<div id="descriptive-analysis" class="section level2">
+<h2>Descriptive Analysis</h2>
+<p>Compare descriptively QOL for those who do and do not take hormonal
+therapy</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># qol</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">x=</span>qol, <span class="fu">after_stat</span>(density))) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">fill=</span><span class="st">&quot;#69b3a2&quot;</span>, <span class="at">color=</span><span class="st">&quot;#e9ecef&quot;</span>, <span class="at">alpha=</span><span class="fl">0.9</span>, <span class="at">binwidth =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Quality of life&quot;</span>, <span class="at">y=</span><span class="st">&quot;Density&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"># age ~ hormon</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>plot.age <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">x=</span>age, <span class="fu">after_stat</span>(density), <span class="at">fill=</span><span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">color=</span><span class="st">&quot;#e9ecef&quot;</span>, <span class="at">binwidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="fu">as.factor</span>(hormon) <span class="sc">~</span> .) <span class="sc">+</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Age&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>                      <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>                      <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>                      <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>    <span class="fu">theme_light</span>()</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>plot.age</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">y=</span>age, <span class="at">x=</span><span class="fu">as.factor</span>(hormon), <span class="at">fill=</span><span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">&quot;Age&quot;</span>, <span class="at">x =</span> <span class="st">&quot;Treatment&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co"># Lymph nodes ~ hormon</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>plot.nodes <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">x =</span> nodes, <span class="at">y =</span> <span class="fu">after_stat</span>(density), <span class="at">fill =</span> <span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">color =</span> <span class="st">&quot;#e9ecef&quot;</span>, <span class="at">binwidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="fu">as.factor</span>(hormon) <span class="sc">~</span> .) <span class="sc">+</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Number of positive lymph nodes&quot;</span>,</span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Density&quot;</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)</span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a>plot.nodes</span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">x=</span>enodes, <span class="fu">after_stat</span>(density), <span class="at">fill=</span><span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">color=</span><span class="fu">c</span>(<span class="st">&quot;#e9ecef&quot;</span>), <span class="at">binwidth =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="fu">as.factor</span>(hormon) <span class="sc">~</span> .) <span class="sc">+</span></span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Number of positive lymph nodes (transformed: exp(-0.12 * nodes))&quot;</span>, </span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a></span>
+<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">x=</span><span class="fu">as.factor</span>(hormon), <span class="at">y=</span>enodes, <span class="at">fill=</span><span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb3-59"><a href="#cb3-59" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">&quot;Number of positive lymph nodes (transformed: exp(-0.12 * nodes))&quot;</span>, </span>
+<span id="cb3-60"><a href="#cb3-60" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Treatment&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-61"><a href="#cb3-61" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb3-62"><a href="#cb3-62" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb3-63"><a href="#cb3-63" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb3-64"><a href="#cb3-64" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb3-65"><a href="#cb3-65" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb3-66"><a href="#cb3-66" tabindex="-1"></a></span>
+<span id="cb3-67"><a href="#cb3-67" tabindex="-1"></a></span>
+<span id="cb3-68"><a href="#cb3-68" tabindex="-1"></a><span class="co"># PgR (fmol/l), log ~ hormon</span></span>
+<span id="cb3-69"><a href="#cb3-69" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">x=</span>pr_1, <span class="fu">after_stat</span>(density), <span class="at">fill=</span><span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb3-70"><a href="#cb3-70" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">color=</span><span class="st">&quot;#e9ecef&quot;</span>, <span class="at">binwidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb3-71"><a href="#cb3-71" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="fu">as.factor</span>(hormon) <span class="sc">~</span> .) <span class="sc">+</span></span>
+<span id="cb3-72"><a href="#cb3-72" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;PgR [fmol/l] (transformed: log(pr)&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-73"><a href="#cb3-73" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb3-74"><a href="#cb3-74" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb3-75"><a href="#cb3-75" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb3-76"><a href="#cb3-76" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb3-77"><a href="#cb3-77" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb3-78"><a href="#cb3-78" tabindex="-1"></a></span>
+<span id="cb3-79"><a href="#cb3-79" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">y=</span>pr_1, <span class="at">x=</span><span class="fu">as.factor</span>(hormon), <span class="at">fill=</span><span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb3-80"><a href="#cb3-80" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb3-81"><a href="#cb3-81" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">&quot;PgR [fmol/l] (transformed: log(pr)&quot;</span>, <span class="at">x =</span> <span class="st">&quot;Density&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-82"><a href="#cb3-82" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb3-83"><a href="#cb3-83" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb3-84"><a href="#cb3-84" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb3-85"><a href="#cb3-85" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb3-86"><a href="#cb3-86" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span></code></pre></div>
+</div>
+<div id="analysis" class="section level2">
+<h2>Analysis</h2>
+<div id="un-adjusted-linear-model" class="section level3">
+<h3>(Un-)Adjusted Linear Model</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Unadjusted linear regression</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>lm.ua <span class="ot">&lt;-</span> <span class="fu">lm</span>(qol <span class="sc">~</span> hormon, <span class="at">data =</span> bcrot)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">summary</span>(lm.ua)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Main-effects linear regression</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>lm.a <span class="ot">&lt;-</span> <span class="fu">lm</span>(qol <span class="sc">~</span> hormon <span class="sc">+</span> age <span class="sc">+</span> enodes <span class="sc">+</span> pr_1, <span class="at">data =</span> bcrot)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">summary</span>(lm.a)</span></code></pre></div>
+</div>
+<div id="propensity-score" class="section level3">
+<h3>Propensity score</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>ps <span class="ot">&lt;-</span> <span class="fu">glm</span>(hormon <span class="sc">~</span> age <span class="sc">+</span> enodes <span class="sc">+</span> pr_1, </span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>          <span class="at">data =</span> bcrot, </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>          <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link=</span><span class="st">&quot;logit&quot;</span>))</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co"># add fitted values to data set</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>bcrot<span class="sc">$</span>ps <span class="ot">&lt;-</span> <span class="fu">fitted</span>(ps)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co"># plot density</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(ps, <span class="at">fill =</span> <span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Propensity score&quot;</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">&quot;Hormone</span><span class="sc">\n</span><span class="st">treatment&quot;</span>) <span class="sc">+</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a> </span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a> </span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co"># Histogram</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> bcrot, <span class="fu">aes</span>(<span class="at">x =</span> ps, <span class="fu">after_stat</span>(density), <span class="at">fill =</span> <span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  <span class="co">#geom_histogram(alpha = 0.5, position = &quot;identity&quot;, binwidth = 0.05) +</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">fill=</span><span class="fu">as.factor</span>(hormon)), <span class="at">color=</span><span class="fu">c</span>(<span class="st">&quot;#e9ecef&quot;</span>), <span class="at">binwidth =</span> <span class="fl">0.05</span>) <span class="sc">+</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>  <span class="fu">facet_grid</span>(hormon <span class="sc">~</span> .) <span class="sc">+</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Propensity score&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>) <span class="sc">+</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span></code></pre></div>
+</div>
+<div id="inverse-probability-treatment-weighting" class="section level3">
+<h3>Inverse Probability Treatment Weighting</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>bcrot<span class="sc">$</span>w <span class="ot">&lt;-</span> (<span class="fu">as.numeric</span>(<span class="fu">as.character</span>(bcrot<span class="sc">$</span>hormon)) <span class="sc">/</span> bcrot<span class="sc">$</span>ps) <span class="sc">+</span> </span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>           ((<span class="dv">1</span> <span class="sc">-</span> <span class="fu">as.numeric</span>(<span class="fu">as.character</span>(bcrot<span class="sc">$</span>hormon))) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> bcrot<span class="sc">$</span>ps))</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">summary</span>(bcrot<span class="sc">$</span>w)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co"># Plot inverse probability weights vs. index</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(bcrot), <span class="at">y =</span> w)) <span class="sc">+</span> </span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="fu">geom_point</span>()  <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot; &quot;</span>) <span class="sc">+</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot; &quot;</span>) <span class="sc">+</span> </span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">65</span>) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co"># Covariate balance plot (love plot)</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>cobalt<span class="sc">::</span><span class="fu">love.plot</span>(hormon <span class="sc">~</span> age <span class="sc">+</span> enodes <span class="sc">+</span> pr_1, </span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>                  <span class="at">data =</span> bcrot, </span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>                  <span class="at">weights =</span> bcrot<span class="sc">$</span>w,</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>                  <span class="at">s.d.denom =</span> <span class="st">&quot;pooled&quot;</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>                  <span class="at">thresholds =</span> <span class="fu">c</span>(<span class="at">m =</span> .<span class="dv">1</span>))</span></code></pre></div>
+</div>
+<div id="use-subset" class="section level3">
+<h3>Use subset</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>plot.age</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>plot.nodes</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>bcrot2 <span class="ot">&lt;-</span> bcrot <span class="sc">%&gt;%</span> <span class="fu">filter</span>(age <span class="sc">&gt;=</span> <span class="dv">40</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>                           nodes <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>                    <span class="fu">mutate</span>(<span class="at">age.2 =</span> age <span class="sc">*</span> age) <span class="sc">%&gt;%</span>    <span class="co"># add age²</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>                    <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(ps, w))  </span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="fu">table</span>(bcrot2<span class="sc">$</span>hormon)</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="fu">table</span>(bcrot<span class="sc">$</span>hormon)</span></code></pre></div>
+</div>
+<div id="estimate-marginal-structural-model-using-the-ipw-package" class="section level3">
+<h3>Estimate Marginal structural model using the IPW package</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>ipw2 <span class="ot">&lt;-</span> ipw<span class="sc">::</span><span class="fu">ipwpoint</span>(<span class="at">exposure =</span> hormon, </span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>                      <span class="at">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">link =</span> <span class="st">&quot;logit&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>                      <span class="at">denominator =</span> <span class="sc">~</span> age <span class="sc">+</span> age<span class="fl">.2</span> <span class="sc">+</span> enodes <span class="sc">+</span> age<span class="sc">*</span>pr_1,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>                      <span class="at">data =</span> bcrot2)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>bcrot2<span class="sc">$</span>ipw <span class="ot">&lt;-</span> ipw2<span class="sc">$</span>ipw.weights</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co"># Plot Inverse Probability Weights</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">summary</span>(ipw2<span class="sc">$</span>ipw.weights)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>ipw<span class="sc">::</span><span class="fu">ipwplot</span>(<span class="at">weights =</span> ipw2<span class="sc">$</span>ipw.weights, </span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>             <span class="at">logscale =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>             <span class="at">main =</span> <span class="st">&quot;Stabilized weights&quot;</span>, </span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>             <span class="at">xlab =</span> <span class="st">&quot;Weights&quot;</span>,</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>             <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>))</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co"># Marginal structural model for the causal effect of hormon on qol</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co"># corrected for confounding using inverse probability weighting</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co"># with robust standard error from the survey package.</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>model_sm2 <span class="ot">&lt;-</span> survey<span class="sc">::</span><span class="fu">svyglm</span>(qol <span class="sc">~</span> hormon,</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a>                            <span class="at">design =</span> <span class="fu">svydesign</span>(<span class="sc">~</span> <span class="dv">1</span>, </span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>                                               <span class="at">weights =</span> <span class="sc">~</span>ipw,</span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>                                               <span class="at">data =</span> bcrot2))</span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="fu">summary</span>(model_sm2)</span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="fu">confint</span>(model_sm2)</span></code></pre></div>
+</div>
+<div id="estimate-marginal-structural-model-by-hand" class="section level3">
+<h3>Estimate Marginal structural model “by hand”</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>ps <span class="ot">&lt;-</span> <span class="fu">glm</span>(hormon <span class="sc">~</span> age <span class="sc">+</span> age<span class="fl">.2</span> <span class="sc">+</span> enodes <span class="sc">+</span> age<span class="sc">*</span>pr_1,</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>          <span class="at">data =</span> bcrot2, </span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>          <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link=</span><span class="st">&quot;logit&quot;</span>))</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>bcrot2<span class="sc">$</span>ps <span class="ot">&lt;-</span> <span class="fu">fitted</span>(ps)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>bcrot2<span class="sc">$</span>w <span class="ot">&lt;-</span> (<span class="fu">as.numeric</span>(<span class="fu">as.character</span>(bcrot2<span class="sc">$</span>hormon)) <span class="sc">/</span> bcrot2<span class="sc">$</span>ps) <span class="sc">+</span> </span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>           ((<span class="dv">1</span> <span class="sc">-</span> <span class="fu">as.numeric</span>(<span class="fu">as.character</span>(bcrot2<span class="sc">$</span>hormon))) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> bcrot2<span class="sc">$</span>ps))</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co"># Weights based on ~age + age.2 + enodes + age*pr_1</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>model_w <span class="ot">&lt;-</span> <span class="fu">lm</span>(qol <span class="sc">~</span> hormon , <span class="at">weights =</span> w, <span class="at">data =</span> bcrot2)</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="fu">summary</span>(model_w)</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co"># Variance estimation using the robust sandwich variance estimator</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>(sandwich_se <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">vcovHC</span>(model_w, <span class="at">type =</span> <span class="st">&quot;HC&quot;</span>))<span class="sc">^</span><span class="fl">0.5</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co"># confidence interval</span></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>sandwichCI <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">coef</span>(model_w)[<span class="dv">2</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> sandwich_se[<span class="dv">2</span>],</span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>                      <span class="fu">coef</span>(model_w)[<span class="dv">2</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> sandwich_se[<span class="dv">2</span>])</span></code></pre></div>
+</div>
+<div id="compare-confidence-intervals" class="section level3">
+<h3>Compare confidence intervals</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>msm.out <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">cbind</span>(<span class="fu">coef</span>(model_w), <span class="fu">confint</span>(model_w))[<span class="dv">2</span>,],</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>                 <span class="fu">c</span>(<span class="fu">coef</span>(model_w)[<span class="dv">2</span>], sandwichCI),</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>                 <span class="fu">cbind</span>(<span class="fu">coef</span>(model_sm2), <span class="fu">confint</span>(model_sm2))[<span class="dv">2</span>,])</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="fu">dimnames</span>(msm.out) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">&quot;MSM:&quot;</span>, <span class="st">&quot;MSM, robust SE (sandwich):&quot;</span>,<span class="st">&quot;MSM, robust SE (ipw):&quot;</span>), </span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>                          <span class="fu">c</span>(<span class="st">&quot;est&quot;</span>, <span class="fu">colnames</span>(msm.out)[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>]))</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>msm.out</span></code></pre></div>
+</div>
+<div id="investigate-extreme-weights" class="section level3">
+<h3>Investigate (extreme) weights</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># truncate weights</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>wq <span class="ot">&lt;-</span> <span class="fu">quantile</span>(bcrot2<span class="sc">$</span>ipw, <span class="at">probs =</span> <span class="fu">c</span>(<span class="fl">0.025</span>, <span class="fl">0.975</span>)) </span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>bcrot2<span class="sc">$</span>wt <span class="ot">&lt;-</span> <span class="fu">if_else</span>(bcrot2<span class="sc">$</span>ipw <span class="sc">&lt;</span> wq[<span class="dv">1</span>], wq[<span class="dv">1</span>], bcrot2<span class="sc">$</span>ipw)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>bcrot2<span class="sc">$</span>wt <span class="ot">&lt;-</span> <span class="fu">if_else</span>(bcrot2<span class="sc">$</span>wt  <span class="sc">&gt;</span> wq[<span class="dv">2</span>], wq[<span class="dv">2</span>], bcrot2<span class="sc">$</span>wt)</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="fu">summary</span>(bcrot2<span class="sc">$</span>ipw)</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="fu">summary</span>(bcrot2<span class="sc">$</span>wt)</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co"># Plot weight vs. index without and with truncation</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot2, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(bcrot2), <span class="at">y =</span> ipw)) <span class="sc">+</span> </span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  <span class="fu">geom_point</span>()  <span class="sc">+</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot; &quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot; &quot;</span>) <span class="sc">+</span> </span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">65</span>) <span class="sc">+</span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Not truncated&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot2, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(bcrot2), <span class="at">y =</span> wt)) <span class="sc">+</span> </span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a>  <span class="fu">geom_point</span>()  <span class="sc">+</span></span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot; &quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot; &quot;</span>) <span class="sc">+</span> </span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">10</span>) <span class="sc">+</span></span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">&quot;Truncated weights&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a></span>
+<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a></span>
+<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot2, <span class="fu">aes</span>(ipw, <span class="at">fill =</span> <span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb12-28"><a href="#cb12-28" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb12-29"><a href="#cb12-29" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Propensity score&quot;</span>,</span>
+<span id="cb12-30"><a href="#cb12-30" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>,</span>
+<span id="cb12-31"><a href="#cb12-31" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">&quot;Hormone</span><span class="sc">\n</span><span class="st">treatment&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-32"><a href="#cb12-32" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb12-33"><a href="#cb12-33" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb12-34"><a href="#cb12-34" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb12-35"><a href="#cb12-35" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb12-36"><a href="#cb12-36" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">&quot;Not truncated&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-37"><a href="#cb12-37" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb12-38"><a href="#cb12-38" tabindex="-1"></a></span>
+<span id="cb12-39"><a href="#cb12-39" tabindex="-1"></a></span>
+<span id="cb12-40"><a href="#cb12-40" tabindex="-1"></a><span class="fu">ggplot</span>(bcrot2, <span class="fu">aes</span>(wt, <span class="at">fill =</span> <span class="fu">as.factor</span>(hormon))) <span class="sc">+</span></span>
+<span id="cb12-41"><a href="#cb12-41" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb12-42"><a href="#cb12-42" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Propensity score&quot;</span>,</span>
+<span id="cb12-43"><a href="#cb12-43" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>,</span>
+<span id="cb12-44"><a href="#cb12-44" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">&quot;Hormone</span><span class="sc">\n</span><span class="st">treatment&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-45"><a href="#cb12-45" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">&quot;#69b3a2&quot;</span>, <span class="st">&quot;#337CA0&quot;</span>),</span>
+<span id="cb12-46"><a href="#cb12-46" tabindex="-1"></a>                    <span class="at">name=</span><span class="st">&quot;Hormonal</span><span class="sc">\n</span><span class="st">treatment&quot;</span>,</span>
+<span id="cb12-47"><a href="#cb12-47" tabindex="-1"></a>                    <span class="at">breaks=</span><span class="fu">c</span>(<span class="st">&quot;0&quot;</span>, <span class="st">&quot;1&quot;</span>),</span>
+<span id="cb12-48"><a href="#cb12-48" tabindex="-1"></a>                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">&quot;no&quot;</span>, <span class="st">&quot;yes&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb12-49"><a href="#cb12-49" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">&quot;Truncated weights&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-50"><a href="#cb12-50" tabindex="-1"></a>  <span class="fu">theme_light</span>()</span>
+<span id="cb12-51"><a href="#cb12-51" tabindex="-1"></a></span>
+<span id="cb12-52"><a href="#cb12-52" tabindex="-1"></a></span>
+<span id="cb12-53"><a href="#cb12-53" tabindex="-1"></a><span class="co"># loveplot without and with truncation</span></span>
+<span id="cb12-54"><a href="#cb12-54" tabindex="-1"></a>cobalt<span class="sc">::</span><span class="fu">love.plot</span>(hormon <span class="sc">~</span> age <span class="sc">+</span> age<span class="fl">.2</span> <span class="sc">+</span> enodes <span class="sc">+</span> age<span class="sc">*</span>pr_1, </span>
+<span id="cb12-55"><a href="#cb12-55" tabindex="-1"></a>                     <span class="at">data =</span> bcrot2, </span>
+<span id="cb12-56"><a href="#cb12-56" tabindex="-1"></a>                     <span class="at">weights =</span> bcrot2<span class="sc">$</span>ipw,</span>
+<span id="cb12-57"><a href="#cb12-57" tabindex="-1"></a>                     <span class="at">s.d.denom =</span> <span class="st">&quot;pooled&quot;</span>,</span>
+<span id="cb12-58"><a href="#cb12-58" tabindex="-1"></a>                     <span class="at">thresholds =</span> <span class="fu">c</span>(<span class="at">m =</span> .<span class="dv">1</span>),</span>
+<span id="cb12-59"><a href="#cb12-59" tabindex="-1"></a>                     <span class="at">title =</span> <span class="st">&quot;Not truncated&quot;</span></span>
+<span id="cb12-60"><a href="#cb12-60" tabindex="-1"></a>                     )</span>
+<span id="cb12-61"><a href="#cb12-61" tabindex="-1"></a></span>
+<span id="cb12-62"><a href="#cb12-62" tabindex="-1"></a>cobalt<span class="sc">::</span><span class="fu">love.plot</span>(hormon <span class="sc">~</span> age <span class="sc">+</span> age<span class="fl">.2</span> <span class="sc">+</span> enodes <span class="sc">+</span> age<span class="sc">*</span>pr_1, </span>
+<span id="cb12-63"><a href="#cb12-63" tabindex="-1"></a>                      <span class="at">data =</span> bcrot2, </span>
+<span id="cb12-64"><a href="#cb12-64" tabindex="-1"></a>                      <span class="at">weights =</span> bcrot2<span class="sc">$</span>wt,</span>
+<span id="cb12-65"><a href="#cb12-65" tabindex="-1"></a>                      <span class="at">s.d.denom =</span> <span class="st">&quot;pooled&quot;</span>,</span>
+<span id="cb12-66"><a href="#cb12-66" tabindex="-1"></a>                      <span class="at">thresholds =</span> <span class="fu">c</span>(<span class="at">m =</span> .<span class="dv">1</span>),</span>
+<span id="cb12-67"><a href="#cb12-67" tabindex="-1"></a>                      <span class="at">title =</span> <span class="st">&quot;Truncated weights&quot;</span>)</span></code></pre></div>
+</div>
+<div id="regression-standardization" class="section level3">
+<h3>Regression standardization</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(qol <span class="sc">~</span> hormon<span class="sc">*</span>age <span class="sc">+</span> hormon<span class="sc">*</span>age<span class="fl">.2</span> <span class="sc">+</span> hormon<span class="sc">*</span>enodes <span class="sc">+</span> hormon<span class="sc">*</span>pr_1 <span class="sc">+</span> age<span class="sc">*</span>pr_1,</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>           <span class="at">data =</span> bcrot2)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>fit.std <span class="ot">&lt;-</span> <span class="fu">stdGlm</span>(<span class="at">fit =</span> fit, <span class="at">data =</span> <span class="fu">as.data.frame</span>(bcrot2), <span class="at">X =</span> <span class="st">&quot;hormon&quot;</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">summary</span>(fit.std))</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="fu">plot</span>(fit.std)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co"># Confidence interval: Mean difference </span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="fu">summary</span>(fit.std, <span class="at">contrast =</span> <span class="st">&quot;difference&quot;</span>, <span class="at">reference =</span> <span class="st">&quot;0&quot;</span>)</span></code></pre></div>
+</div>
+<div id="double-machine-learning---augmented-inverse-probability-weighting" class="section level3">
+<h3>Double machine learning - Augmented Inverse Probability
+Weighting</h3>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Build SuperLearner libraries for outcome (Q) and exposure models (g)</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>sl.lib <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;SL.mean&quot;</span>,<span class="st">&quot;SL.glm&quot;</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co"># Construct an aipw object for later estimations </span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>AIPW_SL <span class="ot">&lt;-</span> AIPW<span class="sc">::</span>AIPW<span class="sc">$</span><span class="fu">new</span>(<span class="at">Y =</span> bcrot2<span class="sc">$</span>qol,</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>                          <span class="at">A =</span> <span class="fu">as.integer</span>(<span class="fu">as.character</span>(bcrot2<span class="sc">$</span>hormon)),</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>                          <span class="at">W =</span> <span class="fu">subset</span>(bcrot2, <span class="at">select =</span> <span class="fu">c</span>(<span class="st">&quot;enodes&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;pr_1&quot;</span>)), </span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>                          <span class="at">Q.SL.library =</span> sl.lib,</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>                          <span class="at">g.SL.library =</span> sl.lib,</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>                          <span class="at">k_split =</span> <span class="dv">10</span>,</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>                          <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co"># Fit the data to the AIPW object and check the balance of propensity scores</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>raipw <span class="ot">&lt;-</span> AIPW_SL<span class="sc">$</span><span class="fu">fit</span>()<span class="sc">$</span><span class="fu">summary</span>()</span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a>AIPW_SL<span class="sc">$</span><span class="fu">fit</span>()<span class="sc">$</span><span class="fu">plot.p_score</span>()<span class="sc">$</span><span class="fu">plot.ip_weights</span>()</span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="co"># Truncate weights (default truncation is set to 0.025)</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a>AIPW_SL<span class="sc">$</span><span class="fu">fit</span>()<span class="sc">$</span><span class="fu">summary</span>(<span class="at">g.bound =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.95</span>))<span class="sc">$</span><span class="fu">plot.p_score</span>()<span class="sc">$</span><span class="fu">plot.ip_weights</span>()</span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="co"># Calculate average treatment effects among the treated/untreated (controls) (ATT/ATC)</span></span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a>AIPW_SL<span class="sc">$</span><span class="fu">stratified_fit</span>()<span class="sc">$</span><span class="fu">summary</span>()</span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a></span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a></span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a><span class="co"># extract weights for loveplots</span></span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a>AIPW_SL<span class="sc">$</span><span class="fu">plot.ip_weights</span>()</span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a>bcrot2<span class="sc">$</span>aipw <span class="ot">&lt;-</span> AIPW_SL<span class="sc">$</span>ip_weights.plot<span class="sc">$</span>data<span class="sc">$</span>ip_weights</span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a></span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="co"># loveplots + AIPW</span></span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a>cobalt<span class="sc">::</span><span class="fu">love.plot</span>(hormon <span class="sc">~</span> age<span class="sc">*</span>enodes<span class="sc">*</span>pr_1 <span class="sc">+</span> </span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a>                           age<span class="fl">.2</span><span class="sc">*</span>enodes<span class="sc">*</span>pr_1, </span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a>                  <span class="at">data =</span> bcrot2, </span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a>                  <span class="at">weights =</span> bcrot2<span class="sc">$</span>aipw,</span>
+<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a>                  <span class="at">s.d.denom =</span> <span class="st">&quot;pooled&quot;</span>,</span>
+<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a>                  <span class="at">thresholds =</span> <span class="fu">c</span>(<span class="at">m =</span> .<span class="dv">1</span>))</span></code></pre></div>
+</div>
+<div id="linear-model-in-the-restricted-sample" class="section level3">
+<h3>Linear Model in the restricted sample</h3>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># Main-effects linear regression</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>lm.ar <span class="ot">&lt;-</span> <span class="fu">lm</span>(qol <span class="sc">~</span> hormon <span class="sc">+</span> age <span class="sc">+</span> enodes <span class="sc">+</span> pr_1, <span class="at">data =</span> bcrot2)</span></code></pre></div>
+</div>
+<div id="compare-results-in-the-restricted-sample" class="section level3">
+<h3>Compare results in the restricted sample</h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="fl">2.07</span>, <span class="fu">rep</span>(<span class="cn">NA</span>,<span class="dv">3</span>)), </span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>             <span class="fu">c</span>(<span class="fu">coef</span>(<span class="fu">summary</span>(lm.ar))[<span class="dv">2</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>],<span class="fu">confint</span>(lm.ar)[<span class="dv">2</span>,]),</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>             <span class="fu">c</span>(<span class="fu">summary</span>(model_sm2)<span class="sc">$</span>coefficients[<span class="dv">2</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], <span class="fu">confint</span>(model_sm2)[<span class="dv">2</span>,]),</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>             <span class="fu">summary</span>(fit.std, <span class="at">contrast =</span> <span class="st">&quot;difference&quot;</span>, <span class="at">reference =</span> <span class="st">&quot;0&quot;</span>)<span class="sc">$</span>est.table[<span class="dv">2</span>,],</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>             raipw<span class="sc">$</span>estimates<span class="sc">$</span>RD)</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="fu">dimnames</span>(out) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">&quot;True ATE&quot;</span>, <span class="st">&quot;LM&quot;</span>, <span class="st">&quot;IPW&quot;</span>, <span class="st">&quot;RS&quot;</span>, <span class="st">&quot;AIPW&quot;</span>),</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>                      <span class="fu">c</span>(<span class="st">&quot;Estimate&quot;</span>, <span class="st">&quot;SE&quot;</span>, <span class="st">&quot;lower&quot;</span>, <span class="st">&quot;upper&quot;</span>))</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(out,<span class="dv">3</span>))</span></code></pre></div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
