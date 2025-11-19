@@ -6,6 +6,7 @@ Practicals for the Data Train Course ["Causal learning" 2023 (V Didelez)](https:
 ## Install the following programs **before** the course:
 
 If you use your own machine, ensure you have R v4.0.0 or higher. 
+
 **Windows users, please make sure that rtools is installed on your computer!** 
 (https://cran.r-project.org/bin/windows/Rtools/)
 
