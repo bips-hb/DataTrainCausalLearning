@@ -106,6 +106,6 @@ pak::pkg_install("github::ericstrobl/RCIT")
 Download the ZIP-files and install it directly in RStudio over 
 Tools → Install Packages ...  → Install from Package Archive File → upload ZIP file
 
-Download the files from here:
-[RCIT](https://srvmail.bips.eu/ajax/share/08a16ece0df4e8f28a16ec4df4e44cc8b5f70f815cb90298/1/8/ODk2/ODk2LzE2ODgyMw)
+Download the files from here:\
+[RCIT](https://srvmail.bips.eu/ajax/share/08a16ece0df4e8f28a16ec4df4e44cc8b5f70f815cb90298/1/8/ODk2/ODk2LzE2ODgyMw)\
 [DataTrainCausalLearning](https://srvmail.bips.eu/ajax/share/091426250519a9f5914262f519a548d18694050cb8803bca/1/8/ODk2/ODk2LzE2ODgyMg)
