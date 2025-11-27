@@ -54,6 +54,12 @@ openPDF("Practical_part2_2025.pdf")
 openPDF("Practical_part3_2025.pdf")   
 ```
 
+## Code
+To open the code, type
+```R
+openCode("Causal2_code.html")
+````
+
 
 ## Download R-Packages from Github
 
